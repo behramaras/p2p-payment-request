@@ -21,3 +21,8 @@ class User(Base):
         "PaymentRequest",
         back_populates="sender",
     )
+    auth_tokens: Mapped[list["AuthToken"]] = relationship(
+        "AuthToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )

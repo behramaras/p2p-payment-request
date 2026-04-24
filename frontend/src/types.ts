@@ -20,3 +20,5 @@ export type Detail = Summary & {
 };
 
 export type UserOut = { id: number; email: string };
+
+export type TokenOut = { token: string };

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
-import { apiFetch } from "./api/client";
+import { Navigate } from "react-router-dom";
+import { apiFetch, clearAuthToken } from "./api/client";
 import type { UserOut } from "./types";
 
 const AuthContext = createContext<UserOut | null>(null);
@@ -12,7 +12,6 @@ export function useAuthUser() {
 export function RequireAuth({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserOut | null>(null);
   const [ready, setReady] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
@@ -21,7 +20,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
         if (!cancelled) setUser(u);
       })
       .catch(() => {
-        if (!cancelled) navigate("/login", { replace: true });
+        if (!cancelled) clearAuthToken();
       })
       .finally(() => {
         if (!cancelled) setReady(true);
@@ -29,11 +28,13 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, []);
 
   if (!ready) {
     return <div className="p-6 text-center text-slate-600">Loading…</div>;
   }
-  if (!user) return null;
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
   return <AuthContext.Provider value={user}>{children}</AuthContext.Provider>;
 }

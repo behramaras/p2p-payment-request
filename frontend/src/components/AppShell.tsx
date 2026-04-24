@@ -1,12 +1,16 @@
 import { Outlet, useNavigate } from "react-router-dom";
-import { apiFetch } from "../api/client";
+import { apiFetch, clearAuthToken } from "../api/client";
 
 export function AppShell() {
   const navigate = useNavigate();
 
   async function logout() {
-    await apiFetch("/api/auth/session", { method: "DELETE" });
-    navigate("/login", { replace: true });
+    try {
+      await apiFetch("/api/auth/session", { method: "DELETE" });
+    } finally {
+      clearAuthToken();
+      navigate("/login", { replace: true });
+    }
   }
 
   return (

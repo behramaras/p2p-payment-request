@@ -7,10 +7,8 @@
 5. Set environment variables:
    - `PYTHONPATH` — `.` if start command runs from repo root with `cd backend`, else leave unset if running inside `backend/`.
    - `DATABASE_URL` — e.g. `sqlite:///./data/app.db` (ephemeral disk; back up if needed).
-   - `SESSION_SECRET` — long random string (required for production).
    - `CORS_ORIGINS` — comma-separated origins, including your Vercel URL, e.g. `https://your-app.vercel.app`.
    - `FRONTEND_BASE` — same Vercel URL (used in share links).
-   - `SESSION_HTTPS_ONLY` — `true` in production.
 6. Health check path: `/health`.
 
-After deploy, set `VITE_API_BASE_URL` on the frontend to the Render service URL and ensure CORS allows that origin with credentials.
+After deploy, set `VITE_API_BASE_URL` on the frontend to the Render service URL and ensure `CORS_ORIGINS` includes that origin. Auth uses `Authorization: Bearer` tokens (stored in the browser by the SPA), not cookies.

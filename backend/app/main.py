@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 
 from app.api.routes import auth, payment_requests, test_seed
 from app.db import engine
@@ -25,15 +24,6 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)
-
-_session_secret = os.getenv("SESSION_SECRET", "dev-insecure-change-me")
-_session_https = os.getenv("SESSION_HTTPS_ONLY", "false").lower() in ("1", "true", "yes")
-app.add_middleware(
-    SessionMiddleware,
-    secret_key=_session_secret,
-    same_site="none" if _session_https else "lax",
-    https_only=_session_https,
 )
 
 app.include_router(auth.router)

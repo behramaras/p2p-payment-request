@@ -10,3 +10,7 @@ class UserOut(BaseModel):
 
 class LoginBody(BaseModel):
     email: str
+
+
+class TokenOut(BaseModel):
+    token: str

@@ -104,8 +104,13 @@ Video recordings of all test runs are saved automatically under `frontend/test-r
 
 ## Deploy
 
+<<<<<<< HEAD
 - **Railway:** Backend is deployed on Railway. Set environment variables:`DATABASE_URL`, `SESSION_SECRET`, `CORS_ORIGINS`, `FRONTEND_BASE`, `SESSION_HTTPS_ONLY=true`
 - **Vercel:** `vercel.json` — set `VITE_API_BASE_URL` to your API URL; align `CORS_ORIGINS` and cookies (`SameSite` / `Secure`) for cross-origin credentialed requests.
+=======
+- **Render:** `docs/deploy-render.md` and `render.yaml`
+- **Vercel:** `vercel.json` — set `VITE_API_BASE_URL` to your API URL and align `CORS_ORIGINS` on the API with your Vercel origin. The SPA sends `Authorization: Bearer` tokens (not cookies).
+>>>>>>> 5197f46 (fix: switch to token-based auth for cross-site Railway + Vercel)
 
 ## Key Technical Decisions
 

@@ -9,11 +9,7 @@ services:
         value: .
       - key: DATABASE_URL
         value: sqlite:///./data/app.db
-      - key: SESSION_SECRET
-        sync: false
       - key: CORS_ORIGINS
         sync: false
       - key: FRONTEND_BASE
         sync: false
-      - key: SESSION_HTTPS_ONLY
-        value: "true"

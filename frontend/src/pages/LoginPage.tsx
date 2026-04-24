@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiFetch } from "../api/client";
+import { apiFetch, setAuthToken } from "../api/client";
+import type { TokenOut } from "../types";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -11,7 +12,8 @@ export function LoginPage() {
     e.preventDefault();
     setErr(null);
     try {
-      await apiFetch("/api/auth/session", { method: "POST", json: { email } });
+      const { token } = await apiFetch<TokenOut>("/api/auth/session", { method: "POST", json: { email } });
+      setAuthToken(token);
       navigate("/", { replace: true });
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : "Login failed");

@@ -1,5 +1,19 @@
 import { API_BASE } from "../config";
 
+const AUTH_TOKEN_KEY = "p2p_auth_token";
+
+export function getAuthToken(): string | null {
+  return localStorage.getItem(AUTH_TOKEN_KEY);
+}
+
+export function setAuthToken(token: string): void {
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
+}
+
+export function clearAuthToken(): void {
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+}
+
 function url(path: string): string {
   if (path.startsWith("http")) return path;
   if (API_BASE) return `${API_BASE.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
@@ -26,10 +40,13 @@ export async function apiFetch<T = unknown>(
   if (json !== undefined) {
     headers.set("Content-Type", "application/json");
   }
+  const token = getAuthToken();
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
   const res = await fetch(url(path), {
     ...rest,
     headers,
-    credentials: "include",
     body: json !== undefined ? JSON.stringify(json) : rest.body,
   });
   if (!res.ok) {
