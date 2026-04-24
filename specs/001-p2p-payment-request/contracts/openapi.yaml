@@ -1,0 +1,258 @@
+openapi: 3.1.0
+info:
+  title: P2P Payment Request API
+  version: 0.1.0
+  description: >
+    FastAPI backend contract. All amounts are integer cents. Session cookie auth.
+servers:
+  - url: http://localhost:8000
+    description: Local backend
+tags:
+  - name: Auth
+  - name: PaymentRequests
+paths:
+  /api/auth/session:
+    post:
+      tags: [Auth]
+      summary: Create session (mock email login)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        "204":
+          description: Session established (Set-Cookie)
+        "400":
+          description: Invalid email
+    delete:
+      tags: [Auth]
+      summary: Destroy session
+      responses:
+        "204":
+          description: Logged out
+  /api/me:
+    get:
+      tags: [Auth]
+      summary: Current user
+      security: [{ cookieAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserOut"
+        "401":
+          description: Not authenticated
+  /api/payment-requests:
+    post:
+      tags: [PaymentRequests]
+      summary: Create payment request
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRequestCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentRequestCreated"
+        "400":
+          description: Validation or self-request
+        "401":
+          description: Not authenticated
+  /api/payment-requests/sent:
+    get:
+      tags: [PaymentRequests]
+      summary: List outgoing requests for current user
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/RequestStatus"
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Search recipient email (substring, normalized)
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentRequestSummary"
+        "401":
+          description: Not authenticated
+  /api/payment-requests/received:
+    get:
+      tags: [PaymentRequests]
+      summary: List incoming requests for current user
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/RequestStatus"
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Search sender email (substring, normalized)
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentRequestSummary"
+        "401":
+          description: Not authenticated
+  /api/payment-requests/{request_id}:
+    get:
+      tags: [PaymentRequests]
+      summary: Get one request (sender or recipient only)
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/requestId"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentRequestDetail"
+        "403":
+          description: Not party to request
+        "404":
+          description: Unknown id
+  /api/payment-requests/{request_id}/pay:
+    post:
+      tags: [PaymentRequests]
+      summary: Pay (recipient only, idempotent)
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/requestId"
+        - in: header
+          name: Idempotency-Key
+          required: false
+          schema:
+            type: string
+            maxLength: 128
+      responses:
+        "200":
+          description: Paid or already paid (idempotent replay)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentRequestDetail"
+        "400":
+          description: Not pending, expired, or not recipient
+        "401":
+          description: Not authenticated
+        "409":
+          description: Concurrent transition lost (e.g. cancelled)
+  /api/payment-requests/{request_id}/decline:
+    post:
+      tags: [PaymentRequests]
+      summary: Decline (recipient only)
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/requestId"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentRequestDetail"
+        "400":
+          description: Invalid state or role
+        "401":
+          description: Not authenticated
+  /api/payment-requests/{request_id}/cancel:
+    post:
+      tags: [PaymentRequests]
+      summary: Cancel (sender only)
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/requestId"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentRequestDetail"
+        "400":
+          description: Invalid state or role
+        "401":
+          description: Not authenticated
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+  parameters:
+    requestId:
+      name: request_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    UserOut:
+      type: object
+      properties:
+        id: { type: integer }
+        email: { type: string }
+    RequestStatus:
+      type: string
+      enum: [pending, paid, declined, expired, cancelled]
+    PaymentRequestCreate:
+      type: object
+      required: [recipient_email, amount_cents]
+      properties:
+        recipient_email: { type: string }
+        amount_cents: { type: integer, minimum: 1 }
+        note: { type: string, maxLength: 500 }
+    PaymentRequestCreated:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        share_url: { type: string, description: Deep link path for frontend }
+    PaymentRequestSummary:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        counterparty_email: { type: string }
+        amount_cents: { type: integer }
+        status: { $ref: "#/components/schemas/RequestStatus" }
+        created_at: { type: string, format: date-time }
+        expires_at: { type: string, format: date-time }
+    PaymentRequestDetail:
+      allOf:
+        - $ref: "#/components/schemas/PaymentRequestSummary"
+        - type: object
+          properties:
+            note: { type: string, nullable: true }
+            sender_email: { type: string }
+            recipient_email: { type: string }
+            paid_at: { type: string, format: date-time, nullable: true }
+            declined_at: { type: string, format: date-time, nullable: true }
+            cancelled_at: { type: string, format: date-time, nullable: true }
+            seconds_until_expiry: { type: integer, nullable: true, description: null if not applicable }
