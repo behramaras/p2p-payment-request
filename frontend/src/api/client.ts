@@ -14,7 +14,7 @@ export function clearAuthToken(): void {
   localStorage.removeItem(AUTH_TOKEN_KEY);
 }
 
-function url(path: string): string {
+export function apiUrl(path: string): string {
   if (path.startsWith("http")) return path;
   if (API_BASE) return `${API_BASE.replace(/\/$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
   return path;
@@ -44,7 +44,7 @@ export async function apiFetch<T = unknown>(
   if (token && !headers.has("Authorization")) {
     headers.set("Authorization", `Bearer ${token}`);
   }
-  const res = await fetch(url(path), {
+  const res = await fetch(apiUrl(path), {
     ...rest,
     headers,
     body: json !== undefined ? JSON.stringify(json) : rest.body,

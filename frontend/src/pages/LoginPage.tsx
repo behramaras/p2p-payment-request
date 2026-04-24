@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiFetch, setAuthToken } from "../api/client";
-import type { TokenOut } from "../types";
+import { ApiError, apiUrl, setAuthToken } from "../api/client";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,8 +11,39 @@ export function LoginPage() {
     e.preventDefault();
     setErr(null);
     try {
-      const { token } = await apiFetch<TokenOut>("/api/auth/session", { method: "POST", json: { email } });
-      setAuthToken(token);
+      const res = await fetch(apiUrl("/api/auth/session"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const text = await res.text();
+      if (!res.ok) {
+        let body: unknown = text;
+        try {
+          body = text ? JSON.parse(text) : text;
+        } catch {
+          /* keep raw text */
+        }
+        throw new ApiError(`HTTP ${res.status}`, res.status, body);
+      }
+      let data: unknown;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        setErr("Invalid response from server");
+        return;
+      }
+      if (
+        data === null ||
+        typeof data !== "object" ||
+        !("token" in data) ||
+        typeof (data as { token: unknown }).token !== "string" ||
+        !(data as { token: string }).token
+      ) {
+        setErr("Login response missing token");
+        return;
+      }
+      setAuthToken((data as { token: string }).token);
       navigate("/", { replace: true });
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : "Login failed");
