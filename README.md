@@ -66,28 +66,39 @@ Video recordings of all test runs are saved automatically under `frontend/test-r
 ## E2E Test Demos
 
 <details>
-<summary><strong>Pay Flow</strong> (sender and recipient)</summary>
+<summary><strong> Pay Flow (Sender and Recipient)</strong></summary>
+<br>
+<p><strong>Sender Experience</strong></p>
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/386b5927-2ff3-4b21-86cd-037c34081ecd" controls="controls" style="max-width: 100%; border-radius: 8px;">
+  </video>
+</div>
 
-<p><strong>Sender</strong></p>
-<video controls src="frontend/test-results/pay-flow-sender/page@1239c2d6139729bdf31edd603daa77d8.webm"></video>
-
-<p><strong>Recipient</strong></p>
-<video controls src="frontend/test-results/pay-flow-recipient/page@98183ded2d4f501355fdad71cf326d3b.webm"></video>
+<br>
+<p><strong>Recipient Experience</strong></p>
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/043e2ae1-dc02-4024-b318-74cb4855f5bc" controls="controls" style="max-width: 100%; border-radius: 8px;">
+  </video>
+</div>
 
 </details>
 
 <details>
-<summary><strong>Create Request</strong></summary>
-
-<video controls src="frontend/test-results/create-request-login-and-create-shows-share-link/video.webm"></video>
-
+<summary><strong> Create Request Flow</strong></summary>
+<br>
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/98de3918-764d-42de-b30a-c7f0112b01fb" controls="controls" style="max-width: 100%; border-radius: 8px;">
+  </video>
+</div>
 </details>
 
 <details>
-<summary><strong>Expired Request</strong></summary>
-
-<video controls src="frontend/test-results/expired-pay-expired-request-cannot-be-paid/video.webm"></video>
-
+<summary><strong> Expired Request Handling</strong></summary>
+<br>
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/f84a1e85-26c2-468d-9a75-ee8df37edc20" controls="controls" style="max-width: 100%; border-radius: 8px;">
+  </video>
+</div>
 </details>
 
 ## Deploy
