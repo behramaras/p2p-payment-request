@@ -32,7 +32,7 @@ _session_https = os.getenv("SESSION_HTTPS_ONLY", "false").lower() in ("1", "true
 app.add_middleware(
     SessionMiddleware,
     secret_key=_session_secret,
-    same_site="lax",
+    same_site="none" if _session_https else "lax",
     https_only=_session_https,
 )
 
